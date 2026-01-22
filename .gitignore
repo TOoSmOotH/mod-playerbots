@@ -20,6 +20,7 @@ CMakeLists.txt.user
 *.BACKUP.*
 *.BASE.*
 *.LOCAL.*
+.env
 
 #
 # IDE & other softwares
@@ -50,3 +51,9 @@ local.properties
 .cproject
 .vscode
 .idea
+
+#
+# Claude Code
+#
+.claude/
+CLAUDE.md

@@ -11,10 +11,13 @@ DB_AUTH_CUSTOM_PATHS+=(
 
 DB_CHARACTERS_CUSTOM_PATHS+=(
 	$MOD_PLAYERBOTS_ROOT"/sql/characters/base/"
+	$MOD_PLAYERBOTS_ROOT"/data/sql/characters/base/"
 )
 
 DB_WORLD_CUSTOM_PATHS+=(
 	$MOD_PLAYERBOTS_ROOT"/sql/world/base/"
+	$MOD_PLAYERBOTS_ROOT"/data/sql/world/base/"
+	$MOD_PLAYERBOTS_ROOT"/data/sql/playerbots/custom/"
 )
 
 ## UPDATES

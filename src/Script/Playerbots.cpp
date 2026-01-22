@@ -504,6 +504,7 @@ public:
 };
 
 void AddPlayerbotsSecureLoginScripts();
+void AddSC_BetterQuestingHooks();
 
 void AddPlayerbotsScripts()
 {
@@ -517,4 +518,5 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_BetterQuestingHooks();
 }
