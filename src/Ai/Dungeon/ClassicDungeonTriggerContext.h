@@ -1,0 +1,6 @@
+#ifndef _PLAYERBOT_CLASSICDUNGEONTRIGGERCONTEXT_H
+#define _PLAYERBOT_CLASSICDUNGEONTRIGGERCONTEXT_H
+
+#include "Deadmines/DeadminesTriggerContext.h"
+
+#endif

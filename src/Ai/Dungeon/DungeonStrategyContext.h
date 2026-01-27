@@ -2,6 +2,8 @@
 #define _PLAYERBOT_DUNGEONSTRATEGYCONTEXT_H
 
 #include "Strategy.h"
+#include "Deadmines/Strategy/DeadminesStrategy.h"
+#include "HellfireRamparts/Strategy/HellfireRampartsStrategy.h"
 #include "UtgardeKeep/Strategy/UtgardeKeepStrategy.h"
 #include "Nexus/Strategy/NexusStrategy.h"
 #include "AzjolNerub/Strategy/AzjolNerubStrategy.h"
@@ -40,11 +42,11 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
     public:
         DungeonStrategyContext() : NamedObjectContext<Strategy>(false, true)
         {
-            // Vanilla
-            // ...
+            // Vanilla (Classic)
+            creators["classic-dm"] = &DungeonStrategyContext::classic_dm;   // The Deadmines
 
             // Burning Crusade
-            // ...
+            creators["tbc-hr"] = &DungeonStrategyContext::tbc_hr;       // Hellfire Ramparts
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
@@ -65,6 +67,11 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
     private:
+        // Vanilla (Classic)
+        static Strategy* classic_dm(PlayerbotAI* botAI) { return new ClassicDungeonDMStrategy(botAI); }
+        // Burning Crusade
+        static Strategy* tbc_hr(PlayerbotAI* botAI) { return new TbcDungeonHRStrategy(botAI); }
+        // Wrath of the Lich King
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }

@@ -28,6 +28,10 @@
 #include "WorldPacketActionContext.h"
 #include "WorldPacketTriggerContext.h"
 #include "Ai/Dungeon/DungeonStrategyContext.h"
+#include "Ai/Dungeon/ClassicDungeonActionContext.h"
+#include "Ai/Dungeon/ClassicDungeonTriggerContext.h"
+#include "Ai/Dungeon/TbcDungeonActionContext.h"
+#include "Ai/Dungeon/TbcDungeonTriggerContext.h"
 #include "Ai/Dungeon/WotlkDungeonActionContext.h"
 #include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 #include "Ai/Raid/RaidStrategyContext.h"
@@ -121,6 +125,11 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidUlduarActionContext());
     actionContexts.Add(new RaidOnyxiaActionContext());
     actionContexts.Add(new RaidIccActionContext());
+    // Classic Dungeons
+    actionContexts.Add(new ClassicDungeonDMActionContext());
+    // Burning Crusade Dungeons
+    actionContexts.Add(new TbcDungeonHRActionContext());
+    // Wrath of the Lich King Dungeons
     actionContexts.Add(new WotlkDungeonUKActionContext());
     actionContexts.Add(new WotlkDungeonNexActionContext());
     actionContexts.Add(new WotlkDungeonANActionContext());
@@ -155,6 +164,11 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidUlduarTriggerContext());
     triggerContexts.Add(new RaidOnyxiaTriggerContext());
     triggerContexts.Add(new RaidIccTriggerContext());
+    // Classic Dungeons
+    triggerContexts.Add(new ClassicDungeonDMTriggerContext());
+    // Burning Crusade Dungeons
+    triggerContexts.Add(new TbcDungeonHRTriggerContext());
+    // Wrath of the Lich King Dungeons
     triggerContexts.Add(new WotlkDungeonUKTriggerContext());
     triggerContexts.Add(new WotlkDungeonNexTriggerContext());
     triggerContexts.Add(new WotlkDungeonANTriggerContext());
