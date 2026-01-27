@@ -127,6 +127,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidIccActionContext());
     // Classic Dungeons
     actionContexts.Add(new ClassicDungeonDMActionContext());
+    actionContexts.Add(new ClassicDungeonStocksActionContext());
     // Burning Crusade Dungeons
     actionContexts.Add(new TbcDungeonHRActionContext());
     // Wrath of the Lich King Dungeons
@@ -166,6 +167,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidIccTriggerContext());
     // Classic Dungeons
     triggerContexts.Add(new ClassicDungeonDMTriggerContext());
+    triggerContexts.Add(new ClassicDungeonStocksTriggerContext());
     // Burning Crusade Dungeons
     triggerContexts.Add(new TbcDungeonHRTriggerContext());
     // Wrath of the Lich King Dungeons

@@ -3,6 +3,7 @@
 
 #include "Strategy.h"
 #include "Deadmines/Strategy/DeadminesStrategy.h"
+#include "Stockade/Strategy/StockadeStrategy.h"
 #include "HellfireRamparts/Strategy/HellfireRampartsStrategy.h"
 #include "UtgardeKeep/Strategy/UtgardeKeepStrategy.h"
 #include "Nexus/Strategy/NexusStrategy.h"
@@ -43,7 +44,8 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         DungeonStrategyContext() : NamedObjectContext<Strategy>(false, true)
         {
             // Vanilla (Classic)
-            creators["classic-dm"] = &DungeonStrategyContext::classic_dm;   // The Deadmines
+            creators["classic-dm"] = &DungeonStrategyContext::classic_dm;       // The Deadmines
+            creators["classic-stocks"] = &DungeonStrategyContext::classic_stocks; // The Stockade
 
             // Burning Crusade
             creators["tbc-hr"] = &DungeonStrategyContext::tbc_hr;       // Hellfire Ramparts
@@ -69,6 +71,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
     private:
         // Vanilla (Classic)
         static Strategy* classic_dm(PlayerbotAI* botAI) { return new ClassicDungeonDMStrategy(botAI); }
+        static Strategy* classic_stocks(PlayerbotAI* botAI) { return new ClassicDungeonStocksStrategy(botAI); }
         // Burning Crusade
         static Strategy* tbc_hr(PlayerbotAI* botAI) { return new TbcDungeonHRStrategy(botAI); }
         // Wrath of the Lich King
