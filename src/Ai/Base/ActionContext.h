@@ -63,6 +63,7 @@
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
 #include "NewRpgAction.h"
+#include "QuestingAction.h"
 #include "FishingAction.h"
 #include "CancelChannelAction.h"
 
@@ -261,6 +262,11 @@ public:
         creators["new rpg wander npc"] = &ActionContext::new_rpg_wander_npc;
         creators["new rpg do quest"] = &ActionContext::new_rpg_do_quest;
         creators["new rpg travel flight"] = &ActionContext::new_rpg_travel_flight;
+
+        creators["questing update"] = &ActionContext::questing_update;
+        creators["questing execute"] = &ActionContext::questing_execute;
+        creators["attack quest target"] = &ActionContext::attack_quest_target;
+        creators["questing recover stuck"] = &ActionContext::questing_recover_stuck;
     }
 
 private:
@@ -454,6 +460,11 @@ private:
     static Action* new_rpg_wander_npc(PlayerbotAI* ai) { return new NewRpgWanderNpcAction(ai); }
     static Action* new_rpg_do_quest(PlayerbotAI* ai) { return new NewRpgDoQuestAction(ai); }
     static Action* new_rpg_travel_flight(PlayerbotAI* ai) { return new NewRpgTravelFlightAction(ai); }
+
+    static Action* questing_update(PlayerbotAI* ai) { return new QuestingUpdateAction(ai); }
+    static Action* questing_execute(PlayerbotAI* ai) { return new QuestingExecuteAction(ai); }
+    static Action* attack_quest_target(PlayerbotAI* ai) { return new AttackQuestTargetAction(ai); }
+    static Action* questing_recover_stuck(PlayerbotAI* ai) { return new QuestingRecoverStuckAction(ai); }
 };
 
 #endif

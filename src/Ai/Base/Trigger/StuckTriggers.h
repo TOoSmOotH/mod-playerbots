@@ -40,4 +40,14 @@ public:
     bool IsActive() override;
 };
 
+// Stuck trigger specifically for selfbots (when a real player controls the bot)
+// This has shorter timeouts since the player is actively watching
+class SelfbotQuestingStuckTrigger : public Trigger
+{
+public:
+    SelfbotQuestingStuckTrigger(PlayerbotAI* botAI) : Trigger(botAI, "selfbot questing stuck", 5) {}
+
+    bool IsActive() override;
+};
+
 #endif

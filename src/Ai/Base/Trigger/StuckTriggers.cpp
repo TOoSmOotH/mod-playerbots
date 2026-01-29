@@ -9,6 +9,7 @@
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "MMapFactory.h"
+#include "NewRpgInfo.h"
 
 bool MoveStuckTrigger::IsActive()
 {
@@ -192,6 +193,66 @@ bool CombatLongStuckTrigger::IsActive()
         // bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(),
         // bot->GetName(), posVal->LastChangeDelay());
 
+        return true;
+    }
+
+    return false;
+}
+
+bool SelfbotQuestingStuckTrigger::IsActive()
+{
+    // This trigger is specifically for selfbots (when player controls the bot)
+    if (!botAI->HasActivePlayerMaster())
+        return false;
+
+    // Only active when in questing mode and traveling to objective or turn-in
+    if (botAI->rpgInfo.status != RPG_QUESTING)
+        return false;
+
+    QuestingSubStatus subStatus = botAI->rpgInfo.questing.subStatus;
+    if (subStatus != QUESTING_TRAVELING_TO_OBJECTIVE && subStatus != QUESTING_TRAVELING_TO_TURNIN)
+        return false;
+
+    WorldPosition botPos(bot);
+
+    LogCalculatedValue<WorldPosition>* posVal =
+        dynamic_cast<LogCalculatedValue<WorldPosition>*>(context->GetUntypedValue("current position"));
+
+    if (!posVal)
+        return false;
+
+    // Use shorter timeout for selfbots (90 seconds instead of 5+ minutes)
+    // since a real player is watching and expects faster feedback
+    if (posVal->LastChangeDelay() > 90)
+    {
+        LOG_DEBUG("playerbots", "SelfbotQuestingStuckTrigger: Bot {} stuck for {} seconds while questing",
+            bot->GetName(), posVal->LastChangeDelay());
+
+        return true;
+    }
+
+    // Also check if bot has been making no progress towards target
+    // by checking position history over last 60 seconds
+    bool noProgress = true;
+    for (auto tPos : posVal->ValueLog())
+    {
+        uint32 timePassed = time(0) - tPos.second;
+
+        if (timePassed > 60)
+        {
+            // If we've moved more than 20 yards in the last 60 seconds, we're not stuck
+            if (botPos.fDist(tPos.first) > 20.0f)
+            {
+                noProgress = false;
+                break;
+            }
+        }
+    }
+
+    if (noProgress && posVal->ValueLog().size() > 3)
+    {
+        LOG_DEBUG("playerbots", "SelfbotQuestingStuckTrigger: Bot {} has made no progress (< 20 yards) in 60+ seconds",
+            bot->GetName());
         return true;
     }
 
