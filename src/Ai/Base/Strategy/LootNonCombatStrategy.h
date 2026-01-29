@@ -6,9 +6,19 @@
 #ifndef _PLAYERBOT_LOOTNONCOMBATSTRATEGY_H
 #define _PLAYERBOT_LOOTNONCOMBATSTRATEGY_H
 
+#include "Multiplier.h"
 #include "Strategy.h"
 
 class PlayerbotAI;
+
+// Multiplier that delays target selection when there's loot available or needs to eat/drink
+// This enables kill-loot-drink-kill pattern instead of kill-kill-kill-loot
+class LootBeforeRetargetMultiplier : public Multiplier
+{
+public:
+    LootBeforeRetargetMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "loot before retarget") {}
+    float GetValue(Action* action) override;
+};
 
 class LootNonCombatStrategy : public Strategy
 {
@@ -16,6 +26,7 @@ public:
     LootNonCombatStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     std::string const getName() override { return "loot"; }
 };
 

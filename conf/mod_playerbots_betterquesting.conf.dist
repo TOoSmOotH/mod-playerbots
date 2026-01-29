@@ -1,0 +1,227 @@
+###############################################
+# mod-playerbots-betterquesting Configuration
+###############################################
+#
+# This module enhances mod-playerbots by building quest and spawn
+# indexes from AzerothCore's ObjectMgr to improve bot quest accuracy
+# and intelligence.
+#
+###############################################
+
+###############################################
+# GENERAL SETTINGS
+###############################################
+
+#
+# BetterQuesting.Enabled
+#     Description: Enable or disable the module entirely.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.Enabled = 1
+
+#
+# BetterQuesting.QuestPriorityBoost
+#     Description: Boost quest priority so bots focus on quests over grinding/wandering.
+#                  When enabled, quest weight = 100, other activities = 1-2.
+#                  This makes bots pick quests ~92% of the time when selecting activities.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.QuestPriorityBoost = 1
+
+###############################################
+# POI FALLBACK SETTINGS
+###############################################
+
+#
+# BetterQuesting.POIFallback
+#     Description: Use spawn data as a fallback when quest_poi table
+#                  doesn't have position data for quest objectives.
+#                  This is the primary integration point with mod-playerbots.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.POIFallback = 1
+
+#
+# BetterQuesting.MaxSpawnDistance
+#     Description: Maximum distance (in yards) to consider spawn points
+#                  when looking for quest objectives.
+#     Default:     2500.0
+#
+
+BetterQuesting.MaxSpawnDistance = 2500.0
+
+###############################################
+# QUEST CHAIN SETTINGS
+###############################################
+
+#
+# BetterQuesting.PrerequisiteCheck
+#     Description: Check quest prerequisites before accepting quests.
+#                  Prevents bots from trying to pick up quests they
+#                  can't actually accept.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.PrerequisiteCheck = 1
+
+#
+# BetterQuesting.QuestChainAwareness
+#     Description: Enable quest chain awareness for smarter quest selection.
+#                  Bots will prefer to continue quest chains they've started.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.QuestChainAwareness = 1
+
+###############################################
+# NAVIGATION SETTINGS
+###############################################
+
+#
+# BetterQuesting.PathValidation
+#     Description: Validate paths to quest objectives using navigation mesh (mmap).
+#                  When enabled, BetterQuesting will check if a valid path exists
+#                  to each spawn point and prioritize reachable locations.
+#                  This prevents bots from wasting time trying to reach
+#                  unreachable objectives.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled - use direct distance only)
+#
+
+BetterQuesting.PathValidation = 1
+
+###############################################
+# QUEST GUIDE SETTINGS
+###############################################
+
+#
+# BetterQuesting.QuestGuide.Enabled
+#     Description: Enable the quest guide system.
+#                  Quest guides are database-defined leveling paths that
+#                  help bots follow specific quest sequences like RestedXP guides.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.QuestGuide.Enabled = 1
+
+#
+# BetterQuesting.QuestGuide.StrictMode
+#     Description: When enabled, bots will ONLY accept quests that are
+#                  part of their active guide. When disabled, guide quests
+#                  get a priority bonus but non-guide quests are still available.
+#     Default:     1 - (Enabled - strict guide mode)
+#                  0 - (Disabled - priority bonus mode)
+#
+
+BetterQuesting.QuestGuide.StrictMode = 1
+
+#
+# BetterQuesting.QuestGuide.PriorityBonus
+#     Description: Base priority bonus for quests that are part of the
+#                  active guide. Current step gets +25 additional bonus,
+#                  with diminishing bonuses for upcoming steps.
+#     Default:     50
+#
+
+BetterQuesting.QuestGuide.PriorityBonus = 50
+
+#
+# BetterQuesting.QuestGuide.AutoSelect
+#     Description: Automatically select the best guide for a player
+#                  based on their race and faction when they log in.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.QuestGuide.AutoSelect = 1
+
+#
+# BetterQuesting.QuestGuide.AllowZoneTransition
+#     Description: Allow bots to transition to new zones based on
+#                  guide-defined zone transitions (triggered by level or quest).
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.QuestGuide.AllowZoneTransition = 1
+
+#
+# BetterQuesting.QuestGuide.SkipUnavailable
+#     Description: Skip guide steps that the bot cannot complete
+#                  (wrong level, missing prerequisites, etc.).
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled - wait for unavailable steps)
+#
+
+BetterQuesting.QuestGuide.SkipUnavailable = 1
+
+###############################################
+# CAVE NAVIGATION SETTINGS
+###############################################
+
+#
+# BetterQuesting.MultiLevelZProbe.Enabled
+#     Description: Enable multi-level Z coordinate probing for cave navigation.
+#                  When enabled, the system will probe multiple Z levels below
+#                  the surface to find walkable positions inside caves.
+#                  This helps bots reach quest objectives inside caves like
+#                  Frostmane Hold, Fargodeep Mine, and other overworld caves.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled - only use surface Z coordinates)
+#
+
+BetterQuesting.MultiLevelZProbe.Enabled = 1
+
+#
+# BetterQuesting.MultiLevelZProbe.MaxDepth
+#     Description: Maximum depth (in yards) below surface to probe for cave floors.
+#                  Higher values allow detection of deeper caves but increase
+#                  computation time slightly.
+#     Default:     150.0
+#
+
+BetterQuesting.MultiLevelZProbe.MaxDepth = 150.0
+
+#
+# BetterQuesting.ApproachWaypoints.Enabled
+#     Description: Enable the approach waypoints system for difficult-to-reach
+#                  locations. When enabled and waypoints are defined, bots will
+#                  use predefined paths to reach cave entrances and other
+#                  locations that PathGenerator struggles with.
+#     Default:     1 - (Enabled)
+#                  0 - (Disabled)
+#
+
+BetterQuesting.ApproachWaypoints.Enabled = 1
+
+#
+# BetterQuesting.ApproachWaypoints.MaxWaypoints
+#     Description: Maximum number of waypoints to use in a single approach path.
+#                  This prevents excessive pathfinding for complex routes.
+#     Default:     10
+#
+
+BetterQuesting.ApproachWaypoints.MaxWaypoints = 10
+
+###############################################
+# DEBUG SETTINGS
+###############################################
+
+#
+# BetterQuesting.LogFallback
+#     Description: Log when fallback spawn data is used.
+#                  Useful for debugging quest behavior.
+#     Default:     0 - (Disabled)
+#                  1 - (Enabled)
+#
+
+BetterQuesting.LogFallback = 0

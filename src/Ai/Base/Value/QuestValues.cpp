@@ -411,9 +411,15 @@ uint32 DialogStatusValue::getDialogStatus(Player* bot, int32 questgiver, uint32 
                 if (bot->SatisfyQuestLevel(pQuest, false))
                 {
                     int32 lowLevelDiff = sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF);
-                    if (pQuest->IsAutoComplete() ||
-                        (pQuest->IsRepeatable() &&
-                         bot->getQuestStatusMap()[itr->second].Status == QUEST_STATUS_REWARDED))
+                    bool wasRewarded = false;
+                    if (pQuest->IsRepeatable())
+                    {
+                        auto& questMap = bot->getQuestStatusMap();
+                        auto qIt = questMap.find(itr->second);
+                        if (qIt != questMap.end())
+                            wasRewarded = (qIt->second.Status == QUEST_STATUS_REWARDED);
+                    }
+                    if (pQuest->IsAutoComplete() || wasRewarded)
                     {
                         dialogStatusNew = DIALOG_STATUS_REWARD_REP;
                     }

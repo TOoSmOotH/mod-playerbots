@@ -248,7 +248,11 @@ bool CleanQuestLogAction::HasProgress(Player* bot, Quest const* quest)
     if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         return true;
 
-    QuestStatusData questStatus = bot->getQuestStatusMap()[questId];
+    auto& questMap = bot->getQuestStatusMap();
+    auto it = questMap.find(questId);
+    if (it == questMap.end())
+        return false;
+    QuestStatusData questStatus = it->second;
 
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {

@@ -167,11 +167,52 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
             }
         }
 
-        // If gameobject has only quest items that bot doesn’t need, skip it.
+        // If gameobject has only quest items, check more carefully before skipping
         if (hasAnyQuestItems && onlyHasQuestItems)
-            return;
+        {
+            // Double-check: if bot has an incomplete quest requiring any of these items, loot it
+            // This handles cases where IsNeededForQuest might fail due to tracking issues
+            bool hasRelatedQuest = false;
+            if (items)
+            {
+                for (size_t i = 0; i < items->size() && i < MAX_GAMEOBJECT_QUEST_ITEMS; i++)
+                {
+                    uint32 itemId = uint32((*items)[i]);
+                    if (!itemId)
+                        continue;
 
-        // Otherwise, loot it.
+                    // Check if any quest in log requires this item
+                    for (int qs = 0; qs < MAX_QUEST_LOG_SIZE; ++qs)
+                    {
+                        uint32 questId = bot->GetQuestSlotQuestId(qs);
+                        if (questId == 0)
+                            continue;
+
+                        Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
+                        if (!qInfo)
+                            continue;
+
+                        for (int j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j)
+                        {
+                            if (qInfo->RequiredItemId[j] == itemId)
+                            {
+                                hasRelatedQuest = true;
+                                break;
+                            }
+                        }
+                        if (hasRelatedQuest)
+                            break;
+                    }
+                    if (hasRelatedQuest)
+                        break;
+                }
+            }
+
+            if (!hasRelatedQuest)
+                return;  // No related quest, skip this object
+        }
+
+        // Loot it
         guid = lootGUID;
 
         uint32 goId = go->GetEntry();
@@ -217,13 +258,22 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
 
 bool LootObject::IsNeededForQuest(Player* bot, uint32 itemId)
 {
+    LOG_DEBUG("playerbots", "IsNeededForQuest - Checking item {} for player {}", itemId, bot->GetName());
+
     for (int qs = 0; qs < MAX_QUEST_LOG_SIZE; ++qs)
     {
         uint32 questId = bot->GetQuestSlotQuestId(qs);
         if (questId == 0)
             continue;
 
-        QuestStatusData& qData = bot->getQuestStatusMap()[questId];
+        auto& questMap = bot->getQuestStatusMap();
+        auto it = questMap.find(questId);
+        if (it == questMap.end())
+            continue;
+
+        QuestStatusData& qData = it->second;
+        LOG_DEBUG("playerbots", "IsNeededForQuest - Quest {} status: {}", questId, (int)qData.Status);
+
         if (qData.Status != QUEST_STATUS_INCOMPLETE)
             continue;
 
@@ -233,16 +283,24 @@ bool LootObject::IsNeededForQuest(Player* bot, uint32 itemId)
 
         for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
         {
+            if (qInfo->RequiredItemId[i] != 0)
+            {
+                LOG_DEBUG("playerbots", "IsNeededForQuest - Quest {} requires item {} (need {}, have {})",
+                    questId, qInfo->RequiredItemId[i], qInfo->RequiredItemCount[i], qData.ItemCount[i]);
+            }
+
             if (!qInfo->RequiredItemCount[i] || (qInfo->RequiredItemCount[i] - qData.ItemCount[i]) <= 0)
                 continue;
 
             if (qInfo->RequiredItemId[i] != itemId)
                 continue;
 
+            LOG_DEBUG("playerbots", "IsNeededForQuest - MATCH! Quest {} needs item {}", questId, itemId);
             return true;
         }
     }
 
+    LOG_DEBUG("playerbots", "IsNeededForQuest - No quest needs item {}", itemId);
     return false;
 }
 

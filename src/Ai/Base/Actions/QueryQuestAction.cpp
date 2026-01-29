@@ -121,7 +121,14 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         return;
     }
 
-    QuestStatusData questStatus = bot->getQuestStatusMap()[questId];
+    auto& questMap = bot->getQuestStatusMap();
+    auto it = questMap.find(questId);
+    if (it == questMap.end())
+    {
+        botAI->GetServices().GetChatService().TellMaster("Quest status not found.");
+        return;
+    }
+    QuestStatusData questStatus = it->second;
 
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {

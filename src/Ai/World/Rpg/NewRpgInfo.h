@@ -11,6 +11,16 @@
 
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
+// Substatus for deterministic questing (RPG_QUESTING status)
+enum QuestingSubStatus : uint8
+{
+    QUESTING_IDLE = 0,
+    QUESTING_TRAVELING_TO_ACCEPT = 1,
+    QUESTING_TRAVELING_TO_OBJECTIVE = 2,
+    QUESTING_TRAVELING_TO_TURNIN = 3,
+    QUESTING_SEARCHING = 4  // Wandering to find quest givers
+};
+
 struct NewRpgInfo
 {
     NewRpgInfo() {}
@@ -61,6 +71,14 @@ struct NewRpgInfo
     struct Idle
     {
     };
+    // RPG_QUESTING (deterministic questing for +questing strategy)
+    struct Questing
+    {
+        uint32 questId{0};
+        Quest const* quest{nullptr};
+        QuestingSubStatus subStatus{QUESTING_IDLE};
+        WorldPosition targetPos{};
+    };
     NewRpgStatus status{RPG_IDLE};
 
     uint32 startT{0};  // start timestamp of the current status
@@ -82,6 +100,7 @@ struct NewRpgInfo
         Rest rest;
         DoQuest quest;
         TravelFlight flight;
+        Questing questing;
     };
 
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
@@ -93,6 +112,7 @@ struct NewRpgInfo
     void ChangeToTravelFlight(ObjectGuid fromFlightMaster, uint32 fromNode, uint32 toNode);
     void ChangeToRest();
     void ChangeToIdle();
+    void ChangeToQuesting(uint32 questId, Quest const* quest, QuestingSubStatus subStatus);
     bool CanChangeTo(NewRpgStatus status);
     void Reset();
     void SetMoveFarTo(WorldPosition pos);

@@ -745,7 +745,11 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         return false;
     }
 
-    QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
+    auto& questMap = bot->getQuestStatusMap();
+    auto qIt = questMap.find(questId);
+    if (qIt == questMap.end())
+        return false;
+    QuestStatusData const& q_status = qIt->second;
 
     if (toComplete && q_status.Status == QUEST_STATUS_COMPLETE)
     {

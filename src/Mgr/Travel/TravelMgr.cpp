@@ -3889,7 +3889,14 @@ std::vector<WorldPosition> TravelMgr::getNextPoint(WorldPosition center, std::ve
     return retVec;
 }
 
-QuestStatusData* TravelMgr::getQuestStatus(Player* bot, uint32 questId) { return &bot->getQuestStatusMap()[questId]; }
+QuestStatusData* TravelMgr::getQuestStatus(Player* bot, uint32 questId)
+{
+    auto& questMap = bot->getQuestStatusMap();
+    auto it = questMap.find(questId);
+    if (it == questMap.end())
+        return nullptr;
+    return &it->second;
+}
 
 bool TravelMgr::getObjectiveStatus(Player* bot, Quest const* pQuest, uint32 objective)
 {
@@ -3901,6 +3908,8 @@ bool TravelMgr::getObjectiveStatus(Player* bot, Quest const* pQuest, uint32 obje
         return false;
 
     QuestStatusData* questStatus = sTravelMgr->getQuestStatus(bot, questId);
+    if (!questStatus)
+        return false;
 
     uint32 reqCount = pQuest->RequiredItemCount[objective];
     uint32 hasCount = questStatus->ItemCount[objective];

@@ -10,6 +10,8 @@
 
 bool HasAvailableLootValue::Calculate()
 {
+    // Use sightDistance (100.0f) to find loot that may require movement
+    // The actual interaction check uses INTERACTION_DISTANCE in triggers
     return !AI_VALUE(bool, "can loot") &&
-           AI_VALUE(LootObjectStack*, "available loot")->CanLoot(sPlayerbotAIConfig->lootDistance);
+           AI_VALUE(LootObjectStack*, "available loot")->CanLoot(sPlayerbotAIConfig->sightDistance);
 }

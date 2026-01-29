@@ -78,6 +78,12 @@ set(TEST_SOURCES
 
     # Integration tests
     unit/Ai/Integration/ActionChainTest.cpp
+
+    # Questing tests
+    unit/Ai/Questing/QuestingStateTest.cpp
+
+    # Manager tests
+    unit/Mgr/Quest/QuestGuideMgrTest.cpp
 )
 
 # Create test executable

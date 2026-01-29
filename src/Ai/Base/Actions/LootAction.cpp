@@ -27,8 +27,10 @@ bool LootAction::Execute(Event /*event*/)
         return false;
 
     LootObject prevLoot = AI_VALUE(LootObject, "loot target");
+    // Use sightDistance to find loot that may require movement (e.g., ranged classes)
+    // The actual interaction check happens in triggers using INTERACTION_DISTANCE
     LootObject const& lootObject =
-        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig->lootDistance);
+        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig->sightDistance);
 
     if (!prevLoot.IsEmpty() && prevLoot.guid != lootObject.guid)
     {

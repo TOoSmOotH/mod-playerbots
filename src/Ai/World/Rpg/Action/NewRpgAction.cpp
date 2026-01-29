@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "DBCStores.h"
@@ -69,6 +70,35 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
         {
+            // If bot has quest strategy and is following a quest guide, deterministically do quests
+            if (botAI->HasStrategy("quest", BotState::BOT_STATE_NON_COMBAT) ||
+                botAI->HasStrategy("rpg quest", BotState::BOT_STATE_NON_COMBAT))
+            {
+                if (sManagerRegistry.HasQuestGuideMgr())
+                {
+                    auto* currentStep = sManagerRegistry.GetQuestGuideMgr().GetCurrentStep(bot);
+                    if (currentStep && currentStep->questId)
+                    {
+                        // Check if we have this quest or can get it
+                        Quest const* quest = sObjectMgr->GetQuestTemplate(currentStep->questId);
+                        if (quest)
+                        {
+                            // If we have the quest in our log, do it
+                            if (bot->GetQuestStatus(currentStep->questId) == QUEST_STATUS_INCOMPLETE)
+                            {
+                                botAI->rpgInfo.ChangeToDoQuest(currentStep->questId, quest);
+                                return true;
+                            }
+                            // Otherwise try to pick it up (go to quest giver)
+                            else if (bot->CanTakeQuest(quest, false))
+                            {
+                                botAI->rpgInfo.ChangeToWanderNpc();
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
                                        RPG_TRAVEL_FLIGHT, RPG_REST});
         }
@@ -246,7 +276,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest()
         int32 currentObjective = botAI->rpgInfo.do_quest.objectiveIdx;
         // check if the objective has completed
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
+        auto& questMap = bot->getQuestStatusMap();
+        auto qIt = questMap.find(questId);
+        if (qIt == questMap.end())
+            return false;
+        QuestStatusData const& q_status = qIt->second;
         bool completed = true;
         if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
@@ -314,7 +348,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest()
         int32 currentObjective = botAI->rpgInfo.do_quest.objectiveIdx;
         // check if the objective has progression
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
+        auto& questMap2 = bot->getQuestStatusMap();
+        auto qIt2 = questMap2.find(questId);
+        if (qIt2 == questMap2.end())
+            return false;
+        QuestStatusData const& q_status = qIt2->second;
         if (currentObjective < QUEST_OBJECTIVES_COUNT)
         {
             if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])

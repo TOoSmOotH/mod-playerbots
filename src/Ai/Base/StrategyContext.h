@@ -33,6 +33,7 @@
 #include "NamedObjectContext.h"
 #include "NewRpgStrategy.h"
 #include "NonCombatStrategy.h"
+#include "QuestingStrategy.h"
 #include "PassiveStrategy.h"
 #include "PullStrategy.h"
 #include "QuestStrategies.h"
@@ -84,6 +85,7 @@ public:
         creators["collision"] = &StrategyContext::collision;
         creators["rpg"] = &StrategyContext::rpg;
         creators["new rpg"] = &StrategyContext::new_rpg;
+        creators["questing"] = &StrategyContext::questing;
         creators["travel"] = &StrategyContext::travel;
         creators["explore"] = &StrategyContext::explore;
         creators["map"] = &StrategyContext::map;
@@ -158,6 +160,7 @@ private:
     static Strategy* collision(PlayerbotAI* botAI) { return new CollisionStrategy(botAI); }
     static Strategy* rpg(PlayerbotAI* botAI) { return new RpgStrategy(botAI); }
     static Strategy* new_rpg(PlayerbotAI* botAI) { return new NewRpgStrategy(botAI); }
+    static Strategy* questing(PlayerbotAI* botAI) { return new QuestingStrategy(botAI); }
     static Strategy* travel(PlayerbotAI* botAI) { return new TravelStrategy(botAI); }
     static Strategy* explore(PlayerbotAI* botAI) { return new ExploreStrategy(botAI); }
     static Strategy* map(PlayerbotAI* botAI) { return new MapStrategy(botAI); }
@@ -237,11 +240,13 @@ public:
     {
         creators["quest"] = &QuestStrategyContext::quest;
         creators["accept all quests"] = &QuestStrategyContext::accept_all_quests;
+        creators["rpg quest"] = &QuestStrategyContext::rpg_quest;
     }
 
 private:
     static Strategy* quest(PlayerbotAI* botAI) { return new DefaultQuestStrategy(botAI); }
     static Strategy* accept_all_quests(PlayerbotAI* botAI) { return new AcceptAllQuestsStrategy(botAI); }
+    static Strategy* rpg_quest(PlayerbotAI* botAI) { return new DefaultQuestStrategy(botAI); }
 };
 
 #endif

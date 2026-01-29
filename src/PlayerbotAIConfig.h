@@ -54,7 +54,9 @@ enum NewRpgStatus : int
     RPG_REST = 6,
     // Initial status
     RPG_IDLE = 7,
-    RPG_STATUS_END = 8
+    // Deterministic questing (for +questing strategy)
+    RPG_QUESTING = 8,
+    RPG_STATUS_END = 9
 };
 
 constexpr uint32 MAX_SPECNO = 20;

@@ -66,6 +66,16 @@ void NewRpgInfo::ChangeToIdle()
     status = RPG_IDLE;
 }
 
+void NewRpgInfo::ChangeToQuesting(uint32 questId, Quest const* quest, QuestingSubStatus subStatus)
+{
+    Reset();
+    status = RPG_QUESTING;
+    questing = Questing();
+    questing.questId = questId;
+    questing.quest = quest;
+    questing.subStatus = subStatus;
+}
+
 bool NewRpgInfo::CanChangeTo(NewRpgStatus /*status*/) { return true; }
 
 void NewRpgInfo::Reset()
@@ -131,6 +141,31 @@ std::string NewRpgInfo::ToString()
             out << "\nfromNode: " << flight.fromNode;
             out << "\ntoNode: " << flight.toNode;
             out << "\ninFlight: " << flight.inFlight;
+            break;
+        case RPG_QUESTING:
+            out << "QUESTING";
+            out << "\nquestId: " << questing.questId;
+            out << "\nsubStatus: ";
+            switch (questing.subStatus)
+            {
+                case QUESTING_IDLE:
+                    out << "IDLE";
+                    break;
+                case QUESTING_TRAVELING_TO_ACCEPT:
+                    out << "TRAVELING_TO_ACCEPT";
+                    break;
+                case QUESTING_TRAVELING_TO_OBJECTIVE:
+                    out << "TRAVELING_TO_OBJECTIVE";
+                    break;
+                case QUESTING_TRAVELING_TO_TURNIN:
+                    out << "TRAVELING_TO_TURNIN";
+                    break;
+                case QUESTING_SEARCHING:
+                    out << "SEARCHING";
+                    break;
+            }
+            out << "\ntargetPos: " << questing.targetPos.GetMapId() << " " << questing.targetPos.GetPositionX() << " "
+                << questing.targetPos.GetPositionY() << " " << questing.targetPos.GetPositionZ();
             break;
         default:
             out << "UNKNOWN";

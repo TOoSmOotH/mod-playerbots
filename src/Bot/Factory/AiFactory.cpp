@@ -291,6 +291,11 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
     engine->addStrategy("formation", false);
 
+    // Add loot to combat when questing is enabled (kill-loot-kill pattern)
+    // Loot actions have low priority (5.0-8.0) so they won't interrupt active combat
+    if (sPlayerbotAIConfig->enableNewRpgStrategy || sPlayerbotAIConfig->autoDoQuests)
+        engine->addStrategy("loot", false);
+
     switch (player->getClass())
     {
         case CLASS_PRIEST:
