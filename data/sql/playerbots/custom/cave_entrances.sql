@@ -10851,8 +10851,10 @@ INSERT INTO `playerbots_questing_approach_waypoints` (`targetType`, `targetId`, 
 INSERT INTO `playerbots_questing_approach_waypoints` (`targetType`, `targetId`, `mapId`, `waypointOrder`, `x`, `y`, `z`, `radius`, `description`) VALUES (0, 3537, 571, 0, 3988.71, 3389.02, 84.59, 5.0, 'Cave entrance for Enkilah Crypt Fiend');
 
 -- Zone 9 cave entrances (Northshire Valley)
--- Echo Ridge Mine entrance - for Kobold Worker/Laborer quests and Skirmish at Echo Ridge (quest 21)
-INSERT INTO `playerbots_questing_approach_waypoints` (`targetType`, `targetId`, `mapId`, `waypointOrder`, `x`, `y`, `z`, `radius`, `description`) VALUES (0, 9, 0, 0, -9181.0, -61.0, 60.0, 10.0, 'Echo Ridge Mine entrance - Kobold Worker, Kobold Laborer');
+-- Echo Ridge Mine entrance - correct coordinates matching approach_waypoints.sql
+INSERT INTO `playerbots_questing_approach_waypoints` (`targetType`, `targetId`, `mapId`, `waypointOrder`, `x`, `y`, `z`, `radius`, `description`) VALUES
+(0, 9, 0, 0, -8910.0, -177.0, 81.0, 8.0, 'Echo Ridge Mine - Entrance approach'),
+(0, 9, 0, 1, -8922.0, -161.0, 79.0, 5.0, 'Echo Ridge Mine - Mine entrance');
 -- Quest-specific waypoints for Skirmish at Echo Ridge (quest 21)
 INSERT INTO `playerbots_questing_approach_waypoints` (`targetType`, `targetId`, `mapId`, `waypointOrder`, `x`, `y`, `z`, `radius`, `description`) VALUES
 (3, 21, 0, 0, -8910.0, -177.0, 81.0, 8.0, 'Skirmish at Echo Ridge - Mine approach'),
