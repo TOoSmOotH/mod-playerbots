@@ -803,15 +803,21 @@ bool QuestingExecuteAction::DoTravelToObjective()
             {
                 float distToWaypoint2D = bot->GetDistance2d(bestWaypoint->x, bestWaypoint->y);
                 float distToTarget2D = bot->GetDistance2d(targetPos.GetPositionX(), targetPos.GetPositionY());
+                float zDiff = std::abs(bot->GetPositionZ() - bestWaypoint->z);
+
+                // Check if we've truly reached the waypoint - must be close in both 2D AND Z
+                // This prevents the bot from thinking it "reached" a cave entrance when it's
+                // actually on top of the hill above the cave (close in 2D but far in Z)
+                bool reachedWaypoint = (distToWaypoint2D <= bestWaypoint->radius) && (zDiff < 15.0f);
 
                 // Use approach waypoint if we haven't reached it yet and it's roughly
                 // between us and the target (using 2D distance to handle cave Z issues)
-                if (distToWaypoint2D > bestWaypoint->radius && bestWpToTarget2D < distToTarget2D + 50.0f)
+                if (!reachedWaypoint && bestWpToTarget2D < distToTarget2D + 50.0f)
                 {
                     if (logFallback)
                     {
-                        LOG_DEBUG("playerbots", "BetterQuesting: {} using approach waypoint at ({}, {}, {}) for quest {} - {} yards from target",
-                            bot->GetName(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z, questId, bestWpToTarget2D);
+                        LOG_DEBUG("playerbots", "BetterQuesting: {} using approach waypoint at ({}, {}, {}) for quest {} - dist2D: {}, zDiff: {}",
+                            bot->GetName(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z, questId, distToWaypoint2D, zDiff);
                     }
                     WorldPosition wpPos(bot->GetMapId(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z);
                     return MoveFarTo(wpPos);
