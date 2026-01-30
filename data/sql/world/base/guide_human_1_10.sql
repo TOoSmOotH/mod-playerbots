@@ -45,7 +45,7 @@ INSERT INTO `playerbots_questing_guide_steps` (`guideId`, `stepOrder`, `questId`
 -- ============================================
 -- GOLDSHIRE (brief stop) - Zone 12
 -- Turn in Report to Goldshire and Rest and Relaxation
--- Then head to Stormwind -> Ironforge
+-- Then teleport to Kharanos in Dun Morogh
 -- ============================================
 
 -- ============================================
@@ -101,48 +101,38 @@ INSERT INTO `playerbots_questing_guide_steps` (`guideId`, `stepOrder`, `questId`
 -- ============================================
 
 -- ============================================
--- DEEPRUN TRAM QUESTS
--- ============================================
-(1, 41, 6661, 8, 80, 0, 0, 1),   -- Deeprun Rat Roundup (Monty in Deeprun Tram)
-(1, 42, 6662, 8, 80, 0, 0, 1),   -- Me Brother, Nipsy (turn in at Stormwind tram)
-
--- ============================================
--- STORMWIND - Zone 1519
--- ============================================
-(1, 43, 399, 10, 80, 1519, 0, 1), -- Humble Beginnings (Baros Alexston, Cathedral Square)
-
--- ============================================
 -- RETURN TO GOLDSHIRE/ELWYNN - Zone 12
+-- Bot will teleport back from Loch Modan/Ironforge
 -- Now we pick up the quests we skipped earlier
 -- ============================================
-(1, 44, 47, 7, 80, 12, 0, 1),    -- Gold Dust Exchange (Remy "Two Times", Goldshire)
-(1, 45, 60, 7, 80, 12, 0, 1),    -- Kobold Candles (William Pestle, Goldshire)
-(1, 46, 85, 7, 80, 12, 0, 1),    -- Lost Necklace ("Auntie" Bernice Stonefield)
-(1, 47, 112, 7, 80, 12, 0, 1),   -- Collecting Kelp (follow-up to Lost Necklace)
-(1, 48, 40, 7, 80, 12, 0, 1),    -- A Fishy Peril (Remy "Two Times")
-(1, 49, 151, 7, 80, 12, 1, 1),   -- Poor Old Blanchy (optional - oats quest)
+(1, 41, 47, 7, 80, 12, 0, 1),    -- Gold Dust Exchange (Remy "Two Times", Goldshire)
+(1, 42, 60, 7, 80, 12, 0, 1),    -- Kobold Candles (William Pestle, Goldshire)
+(1, 43, 85, 7, 80, 12, 0, 1),    -- Lost Necklace ("Auntie" Bernice Stonefield)
+(1, 44, 112, 7, 80, 12, 0, 1),   -- Collecting Kelp (follow-up to Lost Necklace)
+(1, 45, 40, 7, 80, 12, 0, 1),    -- A Fishy Peril (Remy "Two Times")
+(1, 46, 151, 7, 80, 12, 1, 1),   -- Poor Old Blanchy (optional - oats quest)
 
 -- Marshal Dughan quests
-(1, 50, 37, 8, 80, 12, 0, 1),    -- Find the Lost Guards (Marshal Dughan)
-(1, 51, 45, 8, 80, 12, 0, 1),    -- Discover Rolf's Fate (after Lost Guards)
-(1, 52, 71, 8, 80, 12, 0, 1),    -- Report to Thomas (after Rolf's Fate)
+(1, 47, 37, 8, 80, 12, 0, 1),    -- Find the Lost Guards (Marshal Dughan)
+(1, 48, 45, 8, 80, 12, 0, 1),    -- Discover Rolf's Fate (after Lost Guards)
+(1, 49, 71, 8, 80, 12, 0, 1),    -- Report to Thomas (after Rolf's Fate)
 
 -- Mine quests
-(1, 53, 62, 8, 80, 12, 0, 1),    -- The Fargodeep Mine (Marshal Dughan)
-(1, 54, 76, 9, 80, 12, 0, 1),    -- The Jasperlode Mine (follow-up)
+(1, 50, 62, 8, 80, 12, 0, 1),    -- The Fargodeep Mine (Marshal Dughan)
+(1, 51, 76, 9, 80, 12, 0, 1),    -- The Jasperlode Mine (follow-up)
 
 -- Westbrook Garrison
-(1, 55, 239, 9, 80, 12, 0, 1),   -- Westbrook Garrison Needs Help! (Marshal Dughan)
-(1, 56, 11, 9, 80, 12, 0, 1),    -- Riverpaw Gnoll Bounty (Deputy Rainer)
-(1, 57, 52, 9, 80, 12, 0, 1),    -- Protect the Frontier (Guard Thomas)
+(1, 52, 239, 9, 80, 12, 0, 1),   -- Westbrook Garrison Needs Help! (Marshal Dughan)
+(1, 53, 11, 9, 80, 12, 0, 1),    -- Riverpaw Gnoll Bounty (Deputy Rainer)
+(1, 54, 52, 9, 80, 12, 0, 1),    -- Protect the Frontier (Guard Thomas)
 
 -- Final Elwynn quests
-(1, 58, 176, 10, 80, 12, 0, 1),  -- Wanted: "Hogger" (Wanted Poster)
-(1, 59, 114, 10, 80, 12, 0, 1),  -- The Escape (Maybell Maclure)
+(1, 55, 176, 10, 80, 12, 0, 1),  -- Wanted: "Hogger" (Wanted Poster)
+(1, 56, 114, 10, 80, 12, 0, 1),  -- The Escape (Maybell Maclure)
 
 -- Breadcrumbs to Westfall
-(1, 60, 36, 10, 80, 12, 0, 1),   -- Westfall Stew (Salma Saldean breadcrumb)
-(1, 61, 12, 10, 80, 40, 0, 1);   -- The People's Militia (Gryan Stoutmantle, Westfall)
+(1, 57, 36, 10, 80, 12, 0, 1),   -- Westfall Stew (Salma Saldean breadcrumb)
+(1, 58, 12, 10, 80, 40, 0, 1);   -- The People's Militia (Gryan Stoutmantle, Westfall)
 
 -- ============================================
 -- ZONE TRANSITIONS
@@ -150,17 +140,11 @@ INSERT INTO `playerbots_questing_guide_steps` (`guideId`, `stepOrder`, `questId`
 INSERT INTO `playerbots_questing_zone_transitions` (`guideId`, `fromZoneId`, `toZoneId`, `triggerLevel`, `triggerQuestComplete`, `priority`) VALUES
 -- Elwynn (Northshire) to Goldshire after finishing Northshire
 (1, 12, 12, 5, 54, 100),         -- Internal Elwynn move (Northshire -> Goldshire)
--- Goldshire to Stormwind (to take tram to Ironforge)
-(1, 12, 1519, 5, 2158, 95),      -- After Rest and Relaxation, go to SW for tram
--- Stormwind to Dun Morogh (via Deeprun Tram)
-(1, 1519, 1, 5, 0, 90),          -- Take tram to Ironforge, head to Kharanos
+-- Goldshire to Dun Morogh (bot will teleport due to distance)
+(1, 12, 1, 5, 2158, 95),         -- After Rest and Relaxation, teleport to Kharanos
 -- Dun Morogh to Loch Modan (for FP and turn-in)
 (1, 1, 38, 8, 414, 80),          -- After getting Stout to Kadrell quest
--- Loch Modan back to Ironforge
-(1, 38, 1537, 9, 0, 75),         -- After turn-in, fly to IF
--- Ironforge to Stormwind (via tram for Deeprun quests)
-(1, 1537, 1519, 9, 291, 70),     -- After The Reports, take tram back
--- Stormwind to Elwynn (back to Goldshire)
-(1, 1519, 12, 10, 399, 60),      -- After Humble Beginnings, back to Goldshire
+-- Loch Modan back to Elwynn (bot will teleport back to Goldshire)
+(1, 38, 12, 9, 0, 70),           -- After Loch Modan, teleport back to Goldshire
 -- Elwynn to Westfall (final transition)
 (1, 12, 40, 11, 176, 50);        -- After Hogger, head to Westfall
