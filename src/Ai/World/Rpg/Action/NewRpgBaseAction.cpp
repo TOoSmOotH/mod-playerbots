@@ -1,5 +1,6 @@
 #include "NewRpgBaseAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "BroadcastHelper.h"
 #include "FlightMasterCache.h"
 #include "ChatHelper.h"
@@ -36,6 +37,31 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
     if (dest == WorldPosition())
         return false;
+
+    // Handle cross-map travel - teleport directly since navmesh can't path across maps
+    if (dest.getMapId() != bot->GetMapId())
+    {
+        LOG_DEBUG("playerbots",
+            "[New RPG] Cross-map travel: {} teleporting from map {} to map {} (dest: {},{},{})",
+            bot->GetName(), bot->GetMapId(), dest.getMapId(),
+            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
+        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+        return bot->TeleportTo(dest);
+    }
+
+    // Handle very long distances within the same map (e.g., Elwynn Forest -> Ironforge)
+    // The navmesh can't reliably path across continent-spanning distances
+    // Threshold: 2000 yards - teleport for cross-zone travel instead of getting stuck
+    float directDistance = bot->GetExactDist(dest);
+    if (directDistance > 2000.0f)
+    {
+        LOG_DEBUG("playerbots",
+            "[New RPG] Long-distance travel: {} teleporting {} yards to ({},{},{}) - too far for navmesh",
+            bot->GetName(), directDistance,
+            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
+        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+        return bot->TeleportTo(dest);
+    }
 
     if (dest != botAI->rpgInfo.moveFarPos)
     {
@@ -227,6 +253,18 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
     if (menu.Empty())
         return true;
 
+    // Check if a quest guide is active for this player
+    uint32 activeGuideId = 0;
+    if (sManagerRegistry.HasQuestGuideMgr())
+    {
+        auto& guideMgr = sManagerRegistry.GetQuestGuideMgr();
+        auto* progress = guideMgr.GetPlayerProgress(bot->GetGUID().GetCounter());
+        if (progress && progress->guideId)
+        {
+            activeGuideId = progress->guideId;
+        }
+    }
+
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
         QuestMenuItem const& item = menu.GetItem(idx);
@@ -238,6 +276,19 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
             IsQuestWorthDoing(quest) && IsQuestCapableDoing(quest))
         {
+            // When guide is active, only accept quests that are in the guide
+            if (activeGuideId)
+            {
+                uint32 stepOrder = sManagerRegistry.GetQuestGuideMgr().FindStepForQuest(activeGuideId, item.QuestId);
+                if (stepOrder == 0)
+                {
+                    // Quest not in guide - skip it
+                    LOG_DEBUG("playerbots", "[New RPG] {} skipping non-guide quest {} ({})",
+                        bot->GetName(), item.QuestId, quest->GetTitle());
+                    continue;
+                }
+            }
+
             AcceptQuest(quest, guid);
             if (botAI->GetMaster())
                 botAI->GetServices().GetChatService().TellMasterNoFacing("Quest accepted " + ChatHelper::FormatQuest(quest));
@@ -687,6 +738,18 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
     if (menu.Empty())
         return false;
 
+    // Check if a quest guide is active for this player
+    uint32 activeGuideId = 0;
+    if (sManagerRegistry.HasQuestGuideMgr())
+    {
+        auto& guideMgr = sManagerRegistry.GetQuestGuideMgr();
+        auto* progress = guideMgr.GetPlayerProgress(bot->GetGUID().GetCounter());
+        if (progress && progress->guideId)
+        {
+            activeGuideId = progress->guideId;
+        }
+    }
+
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
         QuestMenuItem const& item = menu.GetItem(idx);
@@ -696,6 +759,13 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
         QuestStatus const& status = bot->GetQuestStatus(item.QuestId);
         if (status == QUEST_STATUS_COMPLETE && bot->CanRewardQuest(quest, 0, false))
         {
+            // When guide is active, only count guide quests for turn-in
+            if (activeGuideId)
+            {
+                uint32 stepOrder = sManagerRegistry.GetQuestGuideMgr().FindStepForQuest(activeGuideId, item.QuestId);
+                if (stepOrder == 0)
+                    continue;  // Quest not in guide - skip
+            }
             return true;
         }
     }
@@ -710,6 +780,13 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
             IsQuestWorthDoing(quest) && IsQuestCapableDoing(quest))
         {
+            // When guide is active, only count guide quests for accepting
+            if (activeGuideId)
+            {
+                uint32 stepOrder = sManagerRegistry.GetQuestGuideMgr().FindStepForQuest(activeGuideId, item.QuestId);
+                if (stepOrder == 0)
+                    continue;  // Quest not in guide - skip
+            }
             return true;
         }
     }

@@ -48,6 +48,7 @@
 #include "TellTargetStrategy.h"
 #include "ThreatStrategy.h"
 #include "TravelStrategy.h"
+#include "TravelSafetyStrategy.h"
 #include "UseFoodStrategy.h"
 #include "UsePotionsStrategy.h"
 #include "WorldPacketHandlerStrategy.h"
@@ -87,6 +88,8 @@ public:
         creators["new rpg"] = &StrategyContext::new_rpg;
         creators["questing"] = &StrategyContext::questing;
         creators["travel"] = &StrategyContext::travel;
+        creators["travel safety"] = &StrategyContext::travel_safety;
+        creators["travel avoid"] = &StrategyContext::travel_avoid;
         creators["explore"] = &StrategyContext::explore;
         creators["map"] = &StrategyContext::map;
         creators["map full"] = &StrategyContext::map_full;
@@ -162,6 +165,8 @@ private:
     static Strategy* new_rpg(PlayerbotAI* botAI) { return new NewRpgStrategy(botAI); }
     static Strategy* questing(PlayerbotAI* botAI) { return new QuestingStrategy(botAI); }
     static Strategy* travel(PlayerbotAI* botAI) { return new TravelStrategy(botAI); }
+    static Strategy* travel_safety(PlayerbotAI* botAI) { return new TravelSafetyStrategy(botAI); }
+    static Strategy* travel_avoid(PlayerbotAI* botAI) { return new TravelAvoidStrategy(botAI); }
     static Strategy* explore(PlayerbotAI* botAI) { return new ExploreStrategy(botAI); }
     static Strategy* map(PlayerbotAI* botAI) { return new MapStrategy(botAI); }
     static Strategy* map_full(PlayerbotAI* botAI) { return new MapFullStrategy(botAI); }

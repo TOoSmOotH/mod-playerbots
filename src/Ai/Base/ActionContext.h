@@ -59,6 +59,7 @@
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
+#include "TravelSafetyActions.h"
 #include "VehicleActions.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
@@ -83,6 +84,9 @@ public:
         creators["travel"] = &ActionContext::travel;
         creators["choose travel target"] = &ActionContext::choose_travel_target;
         creators["move to travel target"] = &ActionContext::move_to_travel_target;
+        creators["avoid mob pack"] = &ActionContext::avoid_mob_pack;
+        creators["travel pull"] = &ActionContext::travel_pull;
+        creators["flee to travel safe point"] = &ActionContext::flee_to_travel_safe_point;
         creators["move out of collision"] = &ActionContext::move_out_of_collision;
         creators["move random"] = &ActionContext::move_random;
         creators["attack"] = &ActionContext::melee;
@@ -282,6 +286,9 @@ private:
     static Action* travel(PlayerbotAI* botAI) { return new TravelAction(botAI); }
     static Action* choose_travel_target(PlayerbotAI* botAI) { return new ChooseTravelTargetAction(botAI); }
     static Action* move_to_travel_target(PlayerbotAI* botAI) { return new MoveToTravelTargetAction(botAI); }
+    static Action* avoid_mob_pack(PlayerbotAI* botAI) { return new AvoidMobPackAction(botAI); }
+    static Action* travel_pull(PlayerbotAI* botAI) { return new TravelPullAction(botAI); }
+    static Action* flee_to_travel_safe_point(PlayerbotAI* botAI) { return new FleeToTravelSafePointAction(botAI); }
     static Action* move_out_of_collision(PlayerbotAI* botAI) { return new MoveOutOfCollisionAction(botAI); }
     static Action* move_random(PlayerbotAI* botAI) { return new MoveRandomAction(botAI); }
     static Action* check_values(PlayerbotAI* botAI) { return new CheckValuesAction(botAI); }

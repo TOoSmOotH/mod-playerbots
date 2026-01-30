@@ -138,13 +138,11 @@ bool QuestTargetValue::IsNeededForCurrentQuest(Unit* target, uint32 questId)
                 {
                     if (uint32 lootId = creatureTemplate->lootid)
                     {
-                        // Check if this creature's loot table contains the quest item
-                        if (LootTemplates_Creature.HaveQuestLootFor(lootId))
-                        {
-                            // More specific check - does it have the specific item we need?
-                            if (LootTemplates_Creature.HaveQuestLootForPlayer(lootId, bot))
-                                return true;
-                        }
+                        // Check if this creature's loot table contains items the player needs for quests
+                        // Note: Don't use HaveQuestLootFor() wrapper - it only checks items with QuestRequired=1 flag
+                        // Many quest items (like Chunk of Boar Meat) are normal drops used in quests (QuestRequired=0)
+                        if (LootTemplates_Creature.HaveQuestLootForPlayer(lootId, bot))
+                            return true;
                     }
                 }
             }

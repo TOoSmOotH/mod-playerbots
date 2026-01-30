@@ -34,4 +34,39 @@ void TravelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // Travel safety triggers (only active when TravelSafetyMode > 0)
+    // Higher relevance than "move to travel target" so they take precedence
+    triggers.push_back(
+        new TriggerNode(
+            "being chased during travel",
+            {
+                NextAction("flee to travel safe point", 90.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "should avoid mobs",
+            {
+                NextAction("avoid mob pack", 85.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "can pull from pack",
+            {
+                NextAction("travel pull", 80.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "travel retry exhausted",
+            {
+                NextAction("choose travel target", 70.0f)
+            }
+        )
+    );
 }

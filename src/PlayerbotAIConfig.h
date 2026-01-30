@@ -450,6 +450,17 @@ public:
     uint32 gapMs;
     uint32 gapJitterMs;
 
+    // Travel safety settings - handling mob packs during travel
+    uint32 travelSafetyMode;           // 0=off, 1=avoid-only, 2=hybrid (avoid+pull+flee)
+    uint32 travelAvoidPackMinSize;     // Avoid packs with this many mobs or more
+    uint32 travelAvoidLevelDiff;       // Avoid mobs this many levels above bot
+    uint32 travelPullMaxPackSize;      // Only attempt pull from packs with this many mobs or less
+    uint32 travelPullLevelLimit;       // Only pull mobs up to this many levels above bot
+    float travelKiteDistance;          // Distance to kite from pack when pulling
+    uint32 travelFleeRetryTime;        // Milliseconds to wait before retry after flee
+    uint32 travelMaxRetries;           // Max retries before abandoning travel target
+    float travelPackRadius;            // Distance threshold for mobs to be in same pack
+
     std::string const GetTimestampStr();
     bool hasLog(std::string const fileName)
     {

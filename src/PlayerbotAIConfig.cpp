@@ -417,6 +417,17 @@ bool PlayerbotAIConfig::Initialize()
     gapMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapMs", 200u);
     gapJitterMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapJitterMs", 100u);
 
+    // Travel safety settings - handling mob packs during travel
+    travelSafetyMode = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelSafetyMode", 0);
+    travelAvoidPackMinSize = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelAvoidPackMinSize", 2);
+    travelAvoidLevelDiff = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelAvoidLevelDiff", 2);
+    travelPullMaxPackSize = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelPullMaxPackSize", 3);
+    travelPullLevelLimit = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelPullLevelLimit", 2);
+    travelKiteDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TravelKiteDistance", 25.0f);
+    travelFleeRetryTime = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelFleeRetryTime", 30000);
+    travelMaxRetries = sConfigMgr->GetOption<uint32>("AiPlayerbot.TravelMaxRetries", 3);
+    travelPackRadius = sConfigMgr->GetOption<float>("AiPlayerbot.TravelPackRadius", 15.0f);
+
     LOG_INFO("server.loading", "Loading TalentSpecs...");
 
     for (uint32 cls = 1; cls < MAX_CLASSES; ++cls)

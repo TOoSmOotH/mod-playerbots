@@ -174,6 +174,7 @@ bool QuestingUpdateAction::TryAcceptQuestFromGuide()
     // Find the lowest step order quest that needs accepting
     uint32 bestQuestId = 0;
     Quest const* bestQuest = nullptr;
+    QuestGuideStep const* bestStep = nullptr;
 
     // Scan guide steps in order to find first quest we need to accept
     for (uint32 stepOrder = 1; stepOrder <= 100; ++stepOrder)  // Reasonable limit
@@ -187,9 +188,14 @@ bool QuestingUpdateAction::TryAcceptQuestFromGuide()
 
         QuestStatus status = bot->GetQuestStatus(step->questId);
 
-        // If we already have this quest (incomplete or complete), skip to next
-        if (status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE)
-            continue;
+        // If we have an incomplete quest at this step, don't try to accept later quests
+        // We should work on this quest first (let TryDoIncompleteQuest handle it)
+        if (status == QUEST_STATUS_INCOMPLETE)
+            return false;
+
+        // If quest is complete but not turned in, let TryTurnInCompletedQuest handle it
+        if (status == QUEST_STATUS_COMPLETE)
+            return false;
 
         // If quest is rewarded, skip to next
         if (bot->GetQuestRewardStatus(step->questId))
@@ -211,6 +217,7 @@ bool QuestingUpdateAction::TryAcceptQuestFromGuide()
         // Found a quest to accept
         bestQuestId = step->questId;
         bestQuest = quest;
+        bestStep = step;
         break;
     }
 
@@ -222,6 +229,26 @@ bool QuestingUpdateAction::TryAcceptQuestFromGuide()
     WhisperStatus("Traveling to accept: " + questLink);
 
     SetQuestingState(bestQuestId, bestQuest, QUESTING_TRAVELING_TO_ACCEPT);
+
+    // Check if quest is in a different zone and pre-set targetPos for cross-zone travel
+    if (bestStep && bestStep->zoneId != 0 && bestStep->zoneId != bot->GetZoneId())
+    {
+        if (sManagerRegistry.HasCoreQuestDataMgr())
+        {
+            auto& questDataMgr = sManagerRegistry.GetCoreQuestDataMgr();
+            std::vector<SpawnPoint> starterLocations = questDataMgr.GetQuestStarterLocations(bestQuestId);
+
+            if (!starterLocations.empty())
+            {
+                SpawnPoint const& spawn = starterLocations[0];
+                botAI->rpgInfo.questing.targetPos = WorldPosition(spawn.mapId, spawn.x, spawn.y, spawn.z);
+
+                LOG_DEBUG("playerbots", "BetterQuesting: {} set cross-zone targetPos for quest {} in zone {}",
+                    bot->GetName(), bestQuestId, bestStep->zoneId);
+            }
+        }
+    }
+
     return true;
 }
 
@@ -399,27 +426,9 @@ bool QuestingUpdateAction::TryDoIncompleteQuest()
 
             // Check if there's a lower step quest that needs to be accepted first
             // (not in log yet, but should be done before our best incomplete)
-            if (bestIncompleteStepOrder < UINT32_MAX)
-            {
-                for (uint32 checkStep = 1; checkStep < bestIncompleteStepOrder; ++checkStep)
-                {
-                    QuestGuideStep const* step = guideMgr.GetStepByOrder(progress->guideId, checkStep);
-                    if (!step || !step->questId)
-                        continue;
-
-                    // Skip optional steps
-                    if (step->isOptional)
-                        continue;
-
-                    QuestStatus status = bot->GetQuestStatus(step->questId);
-                    if (status == QUEST_STATUS_NONE)
-                    {
-                        // There's an earlier quest we need to accept first
-                        // Let TryAcceptQuestFromGuide handle it
-                        return false;
-                    }
-                }
-            }
+            // REMOVED: This was causing issues - if an earlier quest can't be accepted (prerequisites),
+            // we should still work on our current incomplete quest rather than getting stuck.
+            // The guide ordering should handle prerequisites properly.
 
             // Work on the incomplete quest with lowest step order
             if (bestIncompleteQuestId && bestIncompleteQuest)
@@ -537,6 +546,95 @@ bool QuestingUpdateAction::TryTurnInCompletedQuest()
     return false;
 }
 
+bool QuestingUpdateAction::TryTravelToGuideZone()
+{
+    // Check if guide system is available and active
+    if (!sManagerRegistry.HasQuestGuideMgr())
+        return false;
+
+    auto& guideMgr = sManagerRegistry.GetQuestGuideMgr();
+    auto* progress = guideMgr.GetPlayerProgress(bot->GetGUID().GetCounter());
+
+    if (!progress || !progress->guideId)
+        return false;
+
+    uint32 currentZone = bot->GetZoneId();
+
+    // Find the next guide step that needs work
+    for (uint32 stepOrder = 1; stepOrder <= 100; ++stepOrder)
+    {
+        QuestGuideStep const* step = guideMgr.GetStepByOrder(progress->guideId, stepOrder);
+        if (!step)
+            break;  // End of guide
+
+        if (!step->questId)
+            continue;
+
+        // Skip if quest is already in progress or completed
+        QuestStatus status = bot->GetQuestStatus(step->questId);
+        if (status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE)
+            continue;
+
+        // Skip if quest is already rewarded
+        if (bot->GetQuestRewardStatus(step->questId))
+            continue;
+
+        Quest const* quest = sObjectMgr->GetQuestTemplate(step->questId);
+        if (!quest)
+            continue;
+
+        // Skip optional quests we can't take
+        if (step->isOptional && !bot->CanTakeQuest(quest, false))
+            continue;
+
+        // Check if this step is in a different zone
+        if (step->zoneId != 0 && step->zoneId != currentZone)
+        {
+            // Found a quest in a different zone - try to get the quest giver location
+            if (sManagerRegistry.HasCoreQuestDataMgr())
+            {
+                auto& questDataMgr = sManagerRegistry.GetCoreQuestDataMgr();
+                std::vector<SpawnPoint> starterLocations = questDataMgr.GetQuestStarterLocations(step->questId);
+
+                if (!starterLocations.empty())
+                {
+                    // Use the first valid spawn point
+                    SpawnPoint const& spawn = starterLocations[0];
+
+                    std::string questLink = ChatHelper::FormatQuest(quest);
+                    WhisperStatus("Traveling to zone for: " + questLink);
+
+                    LOG_DEBUG("playerbots", "BetterQuesting: {} traveling to zone {} for quest {} ({})",
+                        bot->GetName(), step->zoneId, step->questId, quest->GetTitle());
+
+                    SetQuestingState(step->questId, quest, QUESTING_TRAVELING_TO_ACCEPT);
+
+                    // Set target position for travel
+                    botAI->rpgInfo.questing.targetPos = WorldPosition(spawn.mapId, spawn.x, spawn.y, spawn.z);
+
+                    return true;
+                }
+            }
+
+            // Couldn't find spawn location - this is a blocking issue for non-optional steps
+            if (!step->isOptional)
+            {
+                LOG_DEBUG("playerbots", "BetterQuesting: {} can't find spawn location for quest {} in zone {}",
+                    bot->GetName(), step->questId, step->zoneId);
+                return false;
+            }
+            // Optional step we can't reach - skip and try next
+            continue;
+        }
+
+        // Step is in current zone but we couldn't accept it via TryAcceptQuestFromGuide
+        // This means there's some other blocker - don't try zone travel
+        break;
+    }
+
+    return false;
+}
+
 bool QuestingUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
@@ -557,7 +655,20 @@ bool QuestingUpdateAction::Execute(Event /*event*/)
                     if (status == QUEST_STATUS_COMPLETE)
                         return TryTurnInCompletedQuest();
                     else
-                        return TryDoIncompleteQuest();
+                    {
+                        bool result = TryDoIncompleteQuest();
+                        if (!result)
+                        {
+                            // TryDoIncompleteQuest failed - transition to working on this quest directly
+                            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+                            if (quest)
+                            {
+                                SetQuestingState(questId, quest, QUESTING_TRAVELING_TO_OBJECTIVE);
+                                return true;
+                            }
+                        }
+                        return result;
+                    }
                 }
                 break;
 
@@ -624,6 +735,10 @@ bool QuestingUpdateAction::Execute(Event /*event*/)
         if (TryFindNearbyQuestToAccept())
             return true;
 
+        // Priority 5: Travel to next zone if guide has quests there
+        if (TryTravelToGuideZone())
+            return true;
+
         // No quests available - enter searching mode to wander and find quest givers
         WhisperStatus("Searching for quests...");
         info.ChangeToQuesting(0, nullptr, QUESTING_SEARCHING);
@@ -642,6 +757,12 @@ bool QuestingExecuteAction::DoTravelToAccept()
     // Try to interact with nearby quest givers
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
+
+    // Check if targetPos was pre-set (e.g., for cross-zone travel from TryTravelToGuideZone)
+    if (botAI->rpgInfo.questing.targetPos != WorldPosition())
+    {
+        return MoveFarTo(botAI->rpgInfo.questing.targetPos);
+    }
 
     // Get POI for quest acceptance
     std::vector<POIInfo> poiInfo;
@@ -728,20 +849,48 @@ bool QuestingExecuteAction::DoTravelToObjective()
         if (waypoints.empty())
         {
             // Fall back to zone-based waypoints
-            uint32 zoneId = bot->GetZoneId();
-            waypoints = questDataMgr.GetZoneApproachWaypoints(zoneId, bot->GetMapId());
+            // FIRST try destination area (where objective is) - most specific match for caves/mines
+            uint32 destAreaId = bot->GetMap()->GetAreaId(bot->GetPhaseMask(),
+                targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+            waypoints = questDataMgr.GetZoneApproachWaypoints(destAreaId, bot->GetMapId());
 
-            // If still empty, try area ID (may differ from zone ID in sub-areas)
+            if (logFallback && !waypoints.empty())
+            {
+                LOG_INFO("playerbots", "BetterQuesting: Found {} waypoints using destination area ID {} for quest {}",
+                    waypoints.size(), destAreaId, questId);
+            }
+
+            // Then try destination zone
+            uint32 destZoneId = bot->GetMap()->GetZoneId(bot->GetPhaseMask(),
+                targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+            if (waypoints.empty() && destZoneId != destAreaId)
+            {
+                waypoints = questDataMgr.GetZoneApproachWaypoints(destZoneId, bot->GetMapId());
+                if (logFallback && !waypoints.empty())
+                {
+                    LOG_INFO("playerbots", "BetterQuesting: Found {} waypoints using destination zone ID {} for quest {}",
+                        waypoints.size(), destZoneId, questId);
+                }
+            }
+
+            // Then fall back to bot's current zone
+            uint32 zoneId = bot->GetZoneId();
+            if (waypoints.empty() && zoneId != destZoneId)
+            {
+                waypoints = questDataMgr.GetZoneApproachWaypoints(zoneId, bot->GetMapId());
+            }
+
+            // If still empty, try bot's area ID (may differ from zone ID in sub-areas)
             if (waypoints.empty())
             {
                 uint32 areaId = bot->GetAreaId();
-                if (areaId != zoneId)
+                if (areaId != zoneId && areaId != destAreaId)
                 {
                     waypoints = questDataMgr.GetZoneApproachWaypoints(areaId, bot->GetMapId());
                     if (logFallback && !waypoints.empty())
                     {
-                        LOG_INFO("playerbots", "BetterQuesting: Found {} waypoints using area ID {} instead of zone ID {} for quest {}",
-                            waypoints.size(), areaId, zoneId, questId);
+                        LOG_INFO("playerbots", "BetterQuesting: Found {} waypoints using bot area ID {} for quest {}",
+                            waypoints.size(), areaId, questId);
                     }
                 }
             }
@@ -809,25 +958,52 @@ bool QuestingExecuteAction::DoTravelToObjective()
                 // This prevents the bot from thinking it "reached" a cave entrance when it's
                 // actually on top of the hill above the cave (close in 2D but far in Z)
                 bool reachedWaypoint = (distToWaypoint2D <= bestWaypoint->radius) && (zDiff < 15.0f);
+                bool waypointBetween = bestWpToTarget2D < distToTarget2D + 50.0f;
 
                 // Use approach waypoint if we haven't reached it yet and it's roughly
                 // between us and the target (using 2D distance to handle cave Z issues)
-                if (!reachedWaypoint && bestWpToTarget2D < distToTarget2D + 50.0f)
+                if (!reachedWaypoint && waypointBetween)
                 {
                     if (logFallback)
                     {
-                        LOG_DEBUG("playerbots", "BetterQuesting: {} using approach waypoint at ({}, {}, {}) for quest {} - dist2D: {}, zDiff: {}",
-                            bot->GetName(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z, questId, distToWaypoint2D, zDiff);
+                        LOG_DEBUG("playerbots", "BetterQuesting: {} using approach waypoint at ({}, {}, {}) for quest {}",
+                            bot->GetName(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z, questId);
                     }
                     WorldPosition wpPos(bot->GetMapId(), bestWaypoint->x, bestWaypoint->y, bestWaypoint->z);
                     return MoveFarTo(wpPos);
+                }
+                else if (reachedWaypoint)
+                {
+                    // We're at the cave entrance - check if target is INSIDE the cave (below entrance Z)
+                    float targetZDiff = bestWaypoint->z - targetPos.GetPositionZ();
+
+                    if (targetZDiff > 5.0f)
+                    {
+                        // Target is below the entrance - it's inside the cave
+                        // Use incremental movement toward target instead of long-distance pathfinding
+                        // which might fail and send us over the hill
+                        float moveDistance = std::min(15.0f, distToTarget2D);
+                        float angle = bot->GetAngle(targetPos.GetPositionX(), targetPos.GetPositionY());
+                        float newX = bot->GetPositionX() + moveDistance * cos(angle);
+                        float newY = bot->GetPositionY() + moveDistance * sin(angle);
+
+                        // Get the ground height at the new position - this should follow cave floor
+                        float newZ = bot->GetMap()->GetHeight(newX, newY, bot->GetPositionZ(), true, 50.0f);
+                        if (newZ == INVALID_HEIGHT || newZ == VMAP_INVALID_HEIGHT_VALUE)
+                        {
+                            newZ = bot->GetPositionZ();
+                        }
+
+                        return MoveNear(bot->GetMapId(), newX, newY, newZ, 0);
+                    }
                 }
             }
         }
     }
 
     // If we're near the objective, look for quest objects to loot directly
-    if (bot->GetDistance(targetPos) < 30.0f)
+    // Use larger range (60 yards) since quest objects like baskets can be spread over a wide area
+    if (bot->GetDistance(targetPos) < 60.0f)
     {
         uint32 questId = botAI->rpgInfo.questing.questId;
         Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
@@ -893,6 +1069,14 @@ bool QuestingExecuteAction::DoTravelToObjective()
         // If we found a quest object, move to it or loot it
         if (closestGo)
         {
+            // Don't try to loot while in combat
+            if (bot->IsInCombat())
+            {
+                LOG_DEBUG("playerbots", "QuestingAction: {} skipping loot of {} - in combat",
+                    bot->GetName(), closestGo->GetName());
+                return false;  // Let combat actions take over
+            }
+
             // Use a conservative distance (3.0) to ensure we're definitely close enough
             float lootDist = 3.0f;
 
@@ -929,8 +1113,17 @@ bool QuestingExecuteAction::DoTravelToObjective()
             }
         }
 
-        // No quest objects found, wander
-        return MoveRandomNear(20.0f);
+        // No quest objects found - occasionally reset POI to try a different spawn area
+        // This helps with quests like Milly's Harvest where objects are spread across multiple locations
+        if (urand(0, 4) == 0)  // 20% chance to pick new POI
+        {
+            botAI->rpgInfo.questing.targetPos = WorldPosition();
+            LOG_DEBUG("playerbots", "QuestingAction: {} resetting POI to try different spawn area for quest {}",
+                bot->GetName(), questId);
+        }
+
+        // Wander further to search for more
+        return MoveRandomNear(40.0f);
     }
 
     return MoveFarTo(targetPos);

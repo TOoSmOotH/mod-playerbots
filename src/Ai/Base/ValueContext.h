@@ -53,6 +53,7 @@
 #include "LootStrategyValue.h"
 #include "MaintenanceValues.h"
 #include "ManaSaveLevelValue.h"
+#include "MobPackValue.h"
 #include "NearestAdsValue.h"
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
@@ -117,6 +118,10 @@ public:
         creators["possible targets no los"] = &ValueContext::possible_targets_no_los;
         creators["possible triggers"] = &ValueContext::possible_triggers;
         creators["possible adds"] = &ValueContext::possible_adds;
+        creators["mob packs nearby"] = &ValueContext::mob_packs_nearby;
+        creators["mob pack count"] = &ValueContext::mob_pack_count;
+        creators["dangerous pack in path"] = &ValueContext::dangerous_pack_in_path;
+        creators["best pull target from pack"] = &ValueContext::best_pull_target_from_pack;
         creators["prioritized targets"] = &ValueContext::prioritized_targets;
         creators["all targets"] = &ValueContext::all_targets;
         creators["possible rpg targets"] = &ValueContext::possible_rpg_targets;
@@ -427,6 +432,10 @@ private:
         return new PossibleTargetsValue(botAI, "possible targets", sPlayerbotAIConfig->sightDistance, true);
     }
     static UntypedValue* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsValue(botAI); }
+    static UntypedValue* mob_packs_nearby(PlayerbotAI* botAI) { return new MobPacksNearbyValue(botAI); }
+    static UntypedValue* mob_pack_count(PlayerbotAI* botAI) { return new MobPackCountValue(botAI); }
+    static UntypedValue* dangerous_pack_in_path(PlayerbotAI* botAI) { return new DangerousPackInPathValue(botAI); }
+    static UntypedValue* best_pull_target_from_pack(PlayerbotAI* botAI) { return new BestPullTargetFromPackValue(botAI); }
     static UntypedValue* prioritized_targets(PlayerbotAI* botAI) { return new PrioritizedTargetsValue(botAI); }
     static UntypedValue* all_targets(PlayerbotAI* botAI) { return new AllTargetsValue(botAI); }
     static UntypedValue* nearest_adds(PlayerbotAI* botAI) { return new NearestAddsValue(botAI); }

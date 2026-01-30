@@ -34,6 +34,7 @@ protected:
     bool TryFindNearbyQuestToAccept();
     bool TryDoIncompleteQuest();
     bool TryTurnInCompletedQuest();
+    bool TryTravelToGuideZone();
 
     std::string lastWhisperedStatus;
     bool hasAttemptedRestore{false};

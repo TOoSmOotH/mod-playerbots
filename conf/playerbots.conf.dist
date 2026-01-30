@@ -469,6 +469,59 @@ AiPlayerbot.FleeingEnabled = 1
 ####################################################################################################
 
 ####################################################################################################
+# TRAVEL SAFETY
+#
+# Settings for how bots handle mob packs during travel. This prevents bots from blindly
+# walking into groups of mobs and getting killed.
+#
+
+# Travel safety mode:
+# 0 = Disabled (bots travel normally, may walk into packs)
+# 1 = Avoid only (bots will try to detour around packs, but won't pull)
+# 2 = Hybrid (bots will try to avoid, then pull single targets if needed, then flee)
+# Default: 0 (disabled - causes issues with questing and normal travel)
+AiPlayerbot.TravelSafetyMode = 0
+
+# Minimum number of mobs to be considered a "pack" to avoid
+# Default: 2
+AiPlayerbot.TravelAvoidPackMinSize = 2
+
+# Avoid mobs that are this many levels above the bot
+# Default: 2
+AiPlayerbot.TravelAvoidLevelDiff = 2
+
+# Maximum pack size that bots will attempt to pull a single target from
+# Only applies in hybrid mode (mode 2)
+# Default: 3
+AiPlayerbot.TravelPullMaxPackSize = 3
+
+# Maximum level difference for mobs that bots will try to pull
+# Only applies in hybrid mode (mode 2)
+# Default: 2
+AiPlayerbot.TravelPullLevelLimit = 2
+
+# Distance to kite away from pack when pulling (in yards)
+# Default: 25.0
+AiPlayerbot.TravelKiteDistance = 25.0
+
+# Time to wait (in milliseconds) before retrying travel after fleeing
+# Default: 30000 (30 seconds)
+AiPlayerbot.TravelFleeRetryTime = 30000
+
+# Maximum number of retries before abandoning a travel target
+# Default: 3
+AiPlayerbot.TravelMaxRetries = 3
+
+# Distance threshold for mobs to be considered part of the same pack (in yards)
+# Default: 15.0
+AiPlayerbot.TravelPackRadius = 15.0
+
+#
+#
+#
+####################################################################################################
+
+####################################################################################################
 # GREATER BUFFS STRATEGIES
 #
 #

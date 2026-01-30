@@ -20,6 +20,7 @@
 #include "RtiTriggers.h"
 #include "StuckTriggers.h"
 #include "TravelTriggers.h"
+#include "TravelSafetyTriggers.h"
 
 class PlayerbotAI;
 
@@ -160,6 +161,11 @@ public:
         creators["near rpg target"] = &TriggerContext::near_rpg_target;
         creators["no travel target"] = &TriggerContext::no_travel_target;
         creators["far from travel target"] = &TriggerContext::far_from_travel_target;
+        creators["mob pack in path"] = &TriggerContext::mob_pack_in_path;
+        creators["can pull from pack"] = &TriggerContext::can_pull_from_pack;
+        creators["travel retry exhausted"] = &TriggerContext::travel_retry_exhausted;
+        creators["should avoid mobs"] = &TriggerContext::should_avoid_mobs;
+        creators["being chased during travel"] = &TriggerContext::being_chased_during_travel;
         creators["no rti target"] = &TriggerContext::no_rti;
 
         creators["give food"] = &TriggerContext::give_food;
@@ -244,6 +250,11 @@ private:
     static Trigger* near_rpg_target(PlayerbotAI* botAI) { return new NearRpgTargetTrigger(botAI); }
     static Trigger* far_from_travel_target(PlayerbotAI* botAI) { return new FarFromTravelTargetTrigger(botAI); }
     static Trigger* no_travel_target(PlayerbotAI* botAI) { return new NoTravelTargetTrigger(botAI); }
+    static Trigger* mob_pack_in_path(PlayerbotAI* botAI) { return new MobPackInPathTrigger(botAI); }
+    static Trigger* can_pull_from_pack(PlayerbotAI* botAI) { return new CanPullFromPackTrigger(botAI); }
+    static Trigger* travel_retry_exhausted(PlayerbotAI* botAI) { return new TravelRetryExhaustedTrigger(botAI); }
+    static Trigger* should_avoid_mobs(PlayerbotAI* botAI) { return new ShouldAvoidMobsTrigger(botAI); }
+    static Trigger* being_chased_during_travel(PlayerbotAI* botAI) { return new BeingChasedDuringTravelTrigger(botAI); }
     static Trigger* no_rpg_target(PlayerbotAI* botAI) { return new NoRpgTargetTrigger(botAI); }
     static Trigger* has_rpg_target(PlayerbotAI* botAI) { return new HasRpgTargetTrigger(botAI); }
     static Trigger* collision(PlayerbotAI* botAI) { return new CollisionTrigger(botAI); }
